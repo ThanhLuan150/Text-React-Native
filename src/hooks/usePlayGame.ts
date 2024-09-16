@@ -1,5 +1,6 @@
 import {useState, useEffect} from 'react';
 import {Animated, Easing} from 'react-native';
+
 const usePlayGame = () => {
   const [selectedCup, setSelectedCup] = useState(null);
   const [ballPosition, setBallPosition] = useState(null);
@@ -9,6 +10,7 @@ const usePlayGame = () => {
     new Animated.Value(0),
     new Animated.Value(0),
   ]);
+  const [cupXPositions, setCupXPositions] = useState([0, 0, 0]);
   const [modalVisible, setModalVisible] = useState(false);
   const [resultMessage, setResultMessage] = useState('');
   const [resultImage, setResultImage] = useState(null);
@@ -26,26 +28,35 @@ const usePlayGame = () => {
     const randomBallPosition = Math.floor(Math.random() * 3);
     setBallPosition(randomBallPosition);
     shuffleCups();
-    resetCupAnimations();
   };
 
   const shuffleCups = () => {
+    // Randomize cup positions
+    const positions = [0, 1, 2];
+    positions.sort(() => Math.random() - 0.5);
+
+    const xPositions = positions.map((pos, index) => (pos - index) * 100);
+    setCupXPositions(xPositions);
+
+    // Animate cup movements
     Animated.sequence([
-      Animated.timing(cupAnimations[0], {
-        toValue: 1,
-        duration: 700,
-        useNativeDriver: true,
-      }),
-      Animated.timing(cupAnimations[1], {
-        toValue: 1,
-        duration: 700,
-        useNativeDriver: true,
-      }),
-      Animated.timing(cupAnimations[2], {
-        toValue: 1,
-        duration: 700,
-        useNativeDriver: true,
-      }),
+      Animated.parallel([
+        Animated.timing(cupAnimations[0], {
+          toValue: xPositions[0],
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(cupAnimations[1], {
+          toValue: xPositions[1],
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(cupAnimations[2], {
+          toValue: xPositions[2],
+          duration: 700,
+          useNativeDriver: true,
+        }),
+      ]),
     ]).start(() => {
       cupAnimations.forEach(anim => anim.setValue(0));
     });
@@ -58,19 +69,6 @@ const usePlayGame = () => {
       easing: Easing.bounce,
       useNativeDriver: true,
     }).start();
-  };
-
-  const resetCupAnimations = () => {
-    Animated.parallel(
-      cupAnimations.map(anim =>
-        Animated.timing(anim, {
-          toValue: 0,
-          duration: 500,
-          easing: Easing.bounce,
-          useNativeDriver: true,
-        }),
-      ),
-    ).start();
   };
 
   const selectCup = index => {
@@ -103,7 +101,7 @@ const usePlayGame = () => {
     isGameOver,
     setIsGameOver,
     cupAnimations,
-    setCupAnimations,
+    cupXPositions,
     modalVisible,
     setModalVisible,
     resultMessage,
@@ -113,9 +111,9 @@ const usePlayGame = () => {
     startNewGame,
     shuffleCups,
     animateCupLift,
-    resetCupAnimations,
     selectCup,
-    isBallUnderCup
+    isBallUnderCup,
   };
 };
+
 export default usePlayGame;

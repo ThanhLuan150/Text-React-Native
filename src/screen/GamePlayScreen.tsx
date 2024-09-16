@@ -9,11 +9,13 @@ import {
 } from 'react-native';
 import styles from '../styles/GameScreen';
 import usePlayGame from '../hooks/usePlayGame';
+
 const GameScreen = () => {
   const {
     selectedCup,
     isGameOver,
     cupAnimations,
+    cupXPositions,
     modalVisible,
     setModalVisible,
     resultImage,
@@ -21,6 +23,7 @@ const GameScreen = () => {
     selectCup,
     isBallUnderCup,
   } = usePlayGame();
+
   return (
     <ImageBackground
       source={require('../assets/images/background.png')}
@@ -35,7 +38,12 @@ const GameScreen = () => {
               <Animated.View
                 style={[
                   styles.cup,
-                  {transform: [{translateY: cupAnimations[index]}]},
+                  {
+                    transform: [
+                      {translateX: cupAnimations[index]}, // Use translateX for horizontal movement
+                      {translateY: isGameOver ? cupAnimations[index] : 0}, // Use translateY for vertical movement when lifting cups
+                    ],
+                  },
                 ]}>
                 <Image
                   source={require('../assets/images/plastic-cup.png')}
@@ -80,4 +88,5 @@ const GameScreen = () => {
     </ImageBackground>
   );
 };
+
 export default GameScreen;
